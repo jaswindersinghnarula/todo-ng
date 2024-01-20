@@ -1,27 +1,28 @@
 version: "3.8"
 services:
-    db:
-        image: postgres
-        restart: always
-        container_name: todo_v2_db
-        environment:
-            POSTGRES_DB: ${DB_NAME}
-            POSTGRES_PASSWORD: ${DB_PASSWORD}
-        ports:
-            - ${DB_PORT}:${DB_PORT}
-    server:
-        depends_on:
-            - db
-        build: /server
-        restart: always
-        container_name: todo_server
-        ports:
-            - ${SERVER_PORT}:${SERVER_PORT}
-        environment:
-            APP_NAME: ${APP_NAME}
-            APP_VERSION: ${APP_VERSION}
-            APP_DEVELOPER: ${APP_DEVELOPER}
-            SERVER_PORT: ${SERVER_PORT}
-            DATABASE_URL: ${DATABASE_URL}
-            CLIENT_URL: ${CLIENT_URL}
-        command: bash -c "npx prisma migrate dev --name init && npm run start"
+  db:
+    image: postgres
+    restart: always
+    container_name: todo_v2_db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+  server:
+    depends_on:
+      - db
+    build: /server
+    restart: always
+    container_name: todo_server
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+    environment:
+      APP_NAME: ${APP_NAME}
+      APP_VERSION: ${APP_VERSION}
+      APP_DEVELOPER: ${APP_DEVELOPER}
+      SERVER_PORT: ${SERVER_PORT}
+      DATABASE_URL: ${DATABASE_URL}
+      CLIENT_URL: ${CLIENT_URL}
+      SERVER_ORIGINS: ${SERVER_ORIGINS}
+    command: bash -c "npx prisma migrate dev --name init && npm run start"
