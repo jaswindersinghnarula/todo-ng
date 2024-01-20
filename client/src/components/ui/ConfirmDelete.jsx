@@ -1,7 +1,7 @@
 import { useState } from "react";
-import XCircle from "./icons/XCircle";
+import Xmark from "./icons/Xmark";
 
-const ConfirmDelete = ({ deleteHandler }) => {
+const ConfirmDelete = ({ deleteHandler, size }) => {
     const [confirm, setConfirm] = useState(false);
     const toggle = (e) => {
         e.preventDefault();
@@ -11,7 +11,11 @@ const ConfirmDelete = ({ deleteHandler }) => {
         <div className="flex items-center">
             {!confirm && (
                 <a href="#" onClick={toggle}>
-                    <XCircle className="w-6 h-6 text-red-500" />
+                    <Xmark
+                        className={`text-red-500 ${
+                            size === "sm" ? "w-4 h-4" : "w-6 h-6"
+                        }`}
+                    />
                 </a>
             )}
             {confirm && (

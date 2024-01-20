@@ -1,10 +1,10 @@
-import Empty from "../../../../components/common/Empty";
+import Empty from "components/common/Empty";
 import Item from "./Item";
 
 const AllItems = (props) => {
     const { items } = props;
     return (
-        <div className="mx-6 mt-2 p-2">
+        <div className="mx-1 mt-2 p-2">
             {!items.length ? (
                 <Empty />
             ) : (

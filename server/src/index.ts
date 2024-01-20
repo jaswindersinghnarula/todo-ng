@@ -8,11 +8,7 @@ dotenv.config();
 const app: Express = express();
 const PORT = process.env.SERVER_PORT || 3000;
 
-app.use(
-    cors({
-        origin: [process.env.CLIENT_URL || "*"],
-    }),
-);
+app.use(cors());
 app.use(express.json());
 app.use("/todo", todoRoute);
 app.use("/item", itemRoute);

@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import ErrorHandler from "../ErrorHandler";
+import { Capitalize, ErrorHandler } from "../Helper";
 
 const prisma = new PrismaClient();
 const route = express.Router();
@@ -9,9 +9,6 @@ const route = express.Router();
 // GET ALL TODO WITH THEIR ITEMS.
 route.get("/", async (req: Request, res: Response) => {
     const todos = await prisma.todo.findMany({
-        include: {
-            items: true,
-        },
         orderBy: {
             created_at: "asc",
         },
@@ -25,7 +22,7 @@ route.post("/", async (req: Request, res: Response) => {
     try {
         const newTodo = await prisma.todo.create({
             data: {
-                title,
+                title: Capitalize(title),
             },
         });
 
@@ -100,16 +97,73 @@ route.get("/:id/toggle-status", async (req: Request, res: Response) => {
             where: {
                 id: parseInt(id),
             },
+            include: {
+                items: true,
+            },
         });
-        const updatedTodo = await prisma.todo.update({
+        if (todo?.items.length === 0) {
+            const updatedTodo = await prisma.todo.update({
+                where: {
+                    id: parseInt(id),
+                },
+                data: {
+                    status:
+                        todo?.status === "PENDING" ? "COMPLETED" : "PENDING",
+                },
+            });
+            return res.status(200).json(updatedTodo);
+        }
+        throw "There are still todo items pending.";
+    } catch (ex: any) {
+        return ErrorHandler(ex, res);
+    }
+});
+
+// GET ALL ITEMS FOR TODO.
+route.get("/:id/items", async (req: Request, res: Response) => {
+    let { id } = req.params;
+    const items = await prisma.item.findMany({
+        where: {
+            todoId: parseInt(id),
+        },
+    });
+    return res.status(200).json(items);
+});
+
+// CREATE ITEM.
+route.post("/:id/item", async (req: Request, res: Response) => {
+    let { id } = req.params;
+    let { title, description } = req.body;
+    try {
+        const todo = await prisma.todo.findFirst({
             where: {
                 id: parseInt(id),
             },
+        });
+        if (!todo)
+            return res.status(404).json({
+                message: "Todo not found.",
+            });
+        const newItem = await prisma.item.create({
             data: {
-                status: todo?.status === "PENDING" ? "COMPLETED" : "PENDING",
+                title: Capitalize(title),
+                description,
             },
         });
-        return res.status(200).json(updatedTodo);
+        await prisma.todo.update({
+            where: { id: todo.id },
+            data: {
+                items: {
+                    connect: {
+                        id: newItem.id,
+                    },
+                },
+            },
+        });
+        const refreshedItem = await prisma.item.findFirst({
+            where: { id: newItem.id },
+        });
+        return res.status(200).json(refreshedItem);
     } catch (ex: any) {
         return ErrorHandler(ex, res);
     }

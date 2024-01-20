@@ -53,12 +53,14 @@ const useTodos = () => {
             const response = await axios.post(`/item/${todoId}`, item);
             if (response.status === 200) {
                 setTodos((old) => {
-                    return old.map((todo) => {
+                    old.forEach((todo) => {
                         if (todo.id === todoId) {
-                            todo.items.append(response.data);
+                            // console.log(response.data);
+                            todo.items.push(response.data);
                             return todo;
                         }
                     });
+                    return old;
                 });
             }
             return true;
