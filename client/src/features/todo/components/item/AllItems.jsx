@@ -1,10 +1,8 @@
 import Empty from "components/common/Empty";
 import Item from "./Item";
-import { useContext } from "react";
-import ItemContext from "features/todo/contexts/ItemPropvider";
 
-const AllItems = () => {
-  const { items } = useContext(ItemContext);
+const AllItems = (props) => {
+  const { items } = props;
   return (
     <div className="mt-1 p-1">
       {!items.length ? (

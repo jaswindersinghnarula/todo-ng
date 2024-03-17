@@ -1,12 +1,26 @@
-FROM node:slim
+# Pull offial base image.
+FROM node:lts-alpine3.19
+
+# Setup working directory.
 WORKDIR /app
-COPY package.json /app
-COPY /dist /app/dist
-COPY /src /app/src
-COPY /prisma /app/prisma/
-COPY /tsconfig.json /app/tsconfig.json
+
+# Copies package.json and package-lock.json to Docker environment.
+COPY package*.json ./
+
+# Installs all node packages.
 RUN npm install
-RUN apt-get update -y && apt-get install -y openssl
+
+# Copies everything over to Docker environment
+COPY . .
+
+# Prisma Generate.
 RUN npx prisma generate
-# RUN npx prisma migrate dev --name init
+
+# Compile project.
 RUN npx tsc
+
+# Install dependencies.
+RUN apk update && apk add openssl && apk add bash
+
+# Uses port which is used by the actual application.
+EXPOSE 3002

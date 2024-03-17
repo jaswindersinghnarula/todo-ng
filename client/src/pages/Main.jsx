@@ -4,17 +4,21 @@ import Header from "../components/common/Header";
 import Footer from "../components/common/Footer";
 import Content from "../components/common/Content";
 import Todos from "../features/todo/Todos";
+import useCommon from "hooks/useCommon";
+import Loader from "components/common/Loader";
 const Main = () => {
-    useEffect(() => {
-        document.title = `${config().appName} ${config().appVersion}`;
-    }, []);
-    return (
-        <div className="main-page">
-            <Header />
-            <Content element={<Todos />} />
-            <Footer />
-        </div>
-    );
+  const { loading } = useCommon();
+  useEffect(() => {
+    document.title = `${config().appName} ${config().appVersion}`;
+  }, []);
+  return (
+    <div className="main-page">
+      <Header />
+      <Content element={<Todos />} />
+      <Footer />
+      {loading && <Loader />}
+    </div>
+  );
 };
 
 export default Main;

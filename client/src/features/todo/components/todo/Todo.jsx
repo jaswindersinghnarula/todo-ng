@@ -5,7 +5,7 @@ import Items from "./Items";
 import useTodos from "features/todo/hooks/useTodo";
 import TodoTitle from "./TodoTitle";
 import IconButton from "components/ui/IconButton";
-import { ItemProvider } from "features/todo/contexts/ItemPropvider";
+import { ItemProvider } from "features/todo/contexts/ItemProvider";
 
 const Todo = (props) => {
   const { id, title, status, items, created_at, updated_at } = props;
@@ -33,11 +33,7 @@ const Todo = (props) => {
           />
         </div>
       </div>
-      {open && (
-        <ItemProvider>
-          <Items todoId={id} />
-        </ItemProvider>
-      )}
+      {open && <Items todoId={id} items={items} />}
     </div>
   );
 };

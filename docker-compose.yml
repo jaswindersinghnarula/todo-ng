@@ -1,5 +1,6 @@
 version: "3.8"
 services:
+  # Database service
   db:
     image: postgres
     restart: always
@@ -7,22 +8,45 @@ services:
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - ${DB_PORT}:${DB_PORT}
+    # Remove below comments to access database directly.
+    # ports:
+    #   - ${DB_PORT}:${DB_PORT}
+
+  # Backend server service
   server:
     depends_on:
       - db
-    build: /server
+    build:
+      context: /server
     restart: always
     container_name: todo_server
+    image: todo_server:2.0.7
     ports:
       - ${SERVER_PORT}:${SERVER_PORT}
     environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:${DB_PORT}/${DB_NAME}?schema=public
       APP_NAME: ${APP_NAME}
       APP_VERSION: ${APP_VERSION}
       APP_DEVELOPER: ${APP_DEVELOPER}
       SERVER_PORT: ${SERVER_PORT}
-      DATABASE_URL: ${DATABASE_URL}
       CLIENT_URL: ${CLIENT_URL}
       SERVER_ORIGINS: ${SERVER_ORIGINS}
-    command: bash -c "npx prisma migrate dev --name init && npm run start"
+    command: bash -c "npx prisma migrate deploy && npm run start"
+
+  # Frontend client service
+  client:
+    depends_on:
+      - server
+      - db
+    build:
+      context: /client
+      args:
+        REACT_APP_APP_NAME: ${APP_NAME}
+        REACT_APP_APP_VERSION: ${APP_VERSION}
+        REACT_APP_SERVER_URL: ${SERVER_URL}
+    restart: always
+    container_name: todo_client
+    image: todo_client:2.0.7
+    ports:
+      - ${CLIENT_PORT}:${CLIENT_PORT}
+    command: serve -l ${CLIENT_PORT} -s build

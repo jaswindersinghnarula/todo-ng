@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.route = void 0;
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
-const ErrorHandler_1 = __importDefault(require("../ErrorHandler"));
+const Helper_1 = require("../Helper");
 const prisma = new client_1.PrismaClient();
 const route = express_1.default.Router();
 exports.route = route;
@@ -23,9 +23,6 @@ exports.route = route;
 // GET ALL TODO WITH THEIR ITEMS.
 route.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const todos = yield prisma.todo.findMany({
-        include: {
-            items: true,
-        },
         orderBy: {
             created_at: "asc",
         },
@@ -38,13 +35,13 @@ route.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const newTodo = yield prisma.todo.create({
             data: {
-                title,
+                title: (0, Helper_1.Capitalize)(title),
             },
         });
         return res.status(200).json(newTodo);
     }
     catch (ex) {
-        return (0, ErrorHandler_1.default)(ex, res);
+        return (0, Helper_1.ErrorHandler)(ex, res);
     }
 }));
 // READ TODO.
@@ -64,7 +61,7 @@ route.get("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.status(200).json(todo);
     }
     catch (ex) {
-        return (0, ErrorHandler_1.default)(ex, res);
+        return (0, Helper_1.ErrorHandler)(ex, res);
     }
 }));
 // UPDATE TODO.
@@ -85,7 +82,7 @@ route.patch("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         return res.status(200).json(updatedTodo);
     }
     catch (ex) {
-        return (0, ErrorHandler_1.default)(ex, res);
+        return (0, Helper_1.ErrorHandler)(ex, res);
     }
 }));
 // DELETE TODO.
@@ -100,7 +97,7 @@ route.delete("/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* (
         return res.status(200).json();
     }
     catch (ex) {
-        return (0, ErrorHandler_1.default)(ex, res);
+        return (0, Helper_1.ErrorHandler)(ex, res);
     }
 }));
 // TOGGLE STATUS.
@@ -111,18 +108,73 @@ route.get("/:id/toggle-status", (req, res) => __awaiter(void 0, void 0, void 0, 
             where: {
                 id: parseInt(id),
             },
+            include: {
+                items: true,
+            },
         });
-        const updatedTodo = yield prisma.todo.update({
+        if ((todo === null || todo === void 0 ? void 0 : todo.items.length) === 0) {
+            const updatedTodo = yield prisma.todo.update({
+                where: {
+                    id: parseInt(id),
+                },
+                data: {
+                    status: (todo === null || todo === void 0 ? void 0 : todo.status) === "PENDING" ? "COMPLETED" : "PENDING",
+                },
+            });
+            return res.status(200).json(updatedTodo);
+        }
+        throw "There are still todo items pending.";
+    }
+    catch (ex) {
+        return (0, Helper_1.ErrorHandler)(ex, res);
+    }
+}));
+// GET ALL ITEMS FOR TODO.
+route.get("/:id/items", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let { id } = req.params;
+    const items = yield prisma.item.findMany({
+        where: {
+            todoId: parseInt(id),
+        },
+    });
+    return res.status(200).json(items);
+}));
+// CREATE ITEM.
+route.post("/:id/item", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let { id } = req.params;
+    let { title, description } = req.body;
+    try {
+        const todo = yield prisma.todo.findFirst({
             where: {
                 id: parseInt(id),
             },
+        });
+        if (!todo)
+            return res.status(404).json({
+                message: "Todo not found.",
+            });
+        const newItem = yield prisma.item.create({
             data: {
-                status: (todo === null || todo === void 0 ? void 0 : todo.status) === "PENDING" ? "COMPLETED" : "PENDING",
+                title: (0, Helper_1.Capitalize)(title),
+                description,
             },
         });
-        return res.status(200).json(updatedTodo);
+        yield prisma.todo.update({
+            where: { id: todo.id },
+            data: {
+                items: {
+                    connect: {
+                        id: newItem.id,
+                    },
+                },
+            },
+        });
+        const refreshedItem = yield prisma.item.findFirst({
+            where: { id: newItem.id },
+        });
+        return res.status(200).json(refreshedItem);
     }
     catch (ex) {
-        return (0, ErrorHandler_1.default)(ex, res);
+        return (0, Helper_1.ErrorHandler)(ex, res);
     }
 }));

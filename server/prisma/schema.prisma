@@ -27,7 +27,7 @@ model Item {
   status      Status   @default(PENDING)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
-  Todo        Todo?    @relation(fields: [todoId], references: [id])
+  Todo        Todo?    @relation(fields: [todoId], references: [id], onDelete: Cascade)
   todoId      Int?
 }
 
