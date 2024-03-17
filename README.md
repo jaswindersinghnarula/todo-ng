@@ -16,7 +16,9 @@ Edit **.env** file and run below command:
 
 # 👀Preview
 
-![Main Screen](https://raw.githubusercontent.com/jaswindersinghnarula/todo-v1.0/master/imgs/1.png)
-![Main Screen](https://raw.githubusercontent.com/jaswindersinghnarula/todo-v1.0/master/imgs/2.png)
+![Main Screen](https://raw.githubusercontent.com/jaswindersinghnarula/todo-ng/main/preview/1.png)
+![Main Screen](https://raw.githubusercontent.com/jaswindersinghnarula/todo-ng/main/preview/2.png)
+![Main Screen](https://raw.githubusercontent.com/jaswindersinghnarula/todo-ng/main/preview/3.png)
+![Main Screen](https://raw.githubusercontent.com/jaswindersinghnarula/todo-ng/main/preview/4.png)
 
 🍻Cheers
